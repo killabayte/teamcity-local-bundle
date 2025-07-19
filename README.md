@@ -32,6 +32,7 @@ teamcity-k8s-instalations/
 │   └── ...
 └── utils/                  # Utility scripts and documentation
     ├── deploy.sh           # Automated deployment script
+    ├── kind-startup-config.yaml # Kind cluster configuration (2 nodes, port 8080)
     ├── TROUBLESHOOTING.md  # Common issues and solutions
     └── KIND_INGRESS_SETUP.md # Kind cluster setup guide
 ```
@@ -175,12 +176,14 @@ For Kind cluster specific issues, see `utils/KIND_INGRESS_SETUP.md`.
 The `utils/` directory contains helpful scripts and documentation:
 
 ### deploy.sh
-Automated deployment script that:
+Enhanced automated deployment script that:
+- **Creates Kind cluster** with 2 worker nodes and port 8080 exposed (if Kind is available)
 - Checks prerequisites (kubectl, helm, cluster connection)
 - Installs NGINX Ingress Controller if needed
 - Adds teamcity.local to /etc/hosts
 - Deploys TeamCity with proper configuration
 - Provides next steps and access information
+- **No port forwarding needed** when using Kind with port mapping
 
 ### TROUBLESHOOTING.md
 Comprehensive troubleshooting guide covering:

@@ -19,6 +19,33 @@ if ! command -v helm &> /dev/null; then
     exit 1
 fi
 
+# Check if kind is available for cluster setup
+if command -v kind &> /dev/null; then
+    echo "Kind detected. Checking for existing cluster..."
+    
+    # Check if we have a Kind cluster
+    if kind get clusters | grep -q "kind"; then
+        echo "SUCCESS: Kind cluster found"
+    else
+        echo "WARNING: No Kind cluster found. Creating new multi-node cluster..."
+        echo "This will create a cluster with 2 worker nodes and port 8080 exposed for ingress."
+        
+        # Create new cluster with multi-node configuration
+        kind create cluster --config kind-startup-config.yaml
+        
+        echo "SUCCESS: Kind cluster created with 2 worker nodes!"
+        echo "Cluster Information:"
+        kind get clusters
+        kubectl cluster-info
+        echo ""
+        echo "Node Information:"
+        kubectl get nodes
+        echo ""
+    fi
+else
+    echo "WARNING: kind not found. Assuming external cluster."
+fi
+
 # Check if we're connected to a cluster
 if ! kubectl cluster-info &> /dev/null; then
     echo "ERROR: Not connected to a Kubernetes cluster. Please configure kubectl first."
@@ -66,15 +93,21 @@ kubectl get pods -l app=teamcity-teamcity
 echo ""
 echo "Access TeamCity:"
 echo "   URL: http://teamcity.local:8080"
-echo "   (Use port forwarding for Kind clusters)"
 echo ""
-echo "Port Forward Command:"
-echo "   kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80"
+
+# Check if we're using Kind with port mapping
+if command -v kind &> /dev/null && kind get clusters | grep -q "kind"; then
+    echo "SUCCESS: Using Kind cluster with port 8080 exposed!"
+    echo "   No port forwarding needed - access directly at http://teamcity.local:8080"
+else
+    echo "Port Forward Command (if needed):"
+    echo "   kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80"
+fi
+
 echo ""
 echo "Next Steps:"
-echo "   1. Start port forwarding (see command above)"
-echo "   2. Open http://teamcity.local:8080 in your browser"
-echo "   3. Complete TeamCity setup"
-echo "   4. Authorize the 2 agents in the Agents page"
+echo "   1. Open http://teamcity.local:8080 in your browser"
+echo "   2. Complete TeamCity setup"
+echo "   3. Authorize the 2 agents in the Agents page"
 echo ""
 echo "TeamCity is ready to use!" 
