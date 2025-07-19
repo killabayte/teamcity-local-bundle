@@ -39,14 +39,34 @@ teamcity-k8s-instalations/
 
 ## Quick Start
 
-### Option 1: Automated Deployment
+### Option 1: Interactive Deployment (Recommended)
 
 ```bash
-# Run the automated deployment script
+# Run the interactive deployment script
 ./utils/deploy.sh
 ```
 
-### Option 2: Manual Deployment
+### Option 2: Step-by-Step Deployment
+
+```bash
+# Create Kind cluster
+./utils/deploy.sh kind
+
+# Install NGINX Ingress Controller
+./utils/deploy.sh ingress
+
+# Deploy TeamCity
+./utils/deploy.sh teamcity
+```
+
+### Option 3: Complete Setup
+
+```bash
+# Run all steps at once
+./utils/deploy.sh all
+```
+
+### Option 4: Manual Deployment
 
 #### 1. Install NGINX Ingress Controller
 
@@ -176,14 +196,21 @@ For Kind cluster specific issues, see `utils/KIND_INGRESS_SETUP.md`.
 The `utils/` directory contains helpful scripts and documentation:
 
 ### deploy.sh
-Enhanced automated deployment script that:
-- **Creates Kind cluster** with 2 worker nodes and port 8080 exposed (if Kind is available)
-- Checks prerequisites (kubectl, helm, cluster connection)
-- Installs NGINX Ingress Controller if needed
-- Adds teamcity.local to /etc/hosts
-- Deploys TeamCity with proper configuration
-- Provides next steps and access information
-- **No port forwarding needed** when using Kind with port mapping
+Modular deployment script with interactive prompts:
+- **kind** - Create Kind cluster with 2 worker nodes and port 8080 exposed
+- **ingress** - Install NGINX Ingress Controller
+- **teamcity** - Deploy TeamCity to the cluster
+- **all** - Run complete setup (kind + ingress + teamcity)
+- **Interactive mode** - Choose what to install with prompts
+
+Usage examples:
+```bash
+./utils/deploy.sh kind      # Only create Kind cluster
+./utils/deploy.sh ingress   # Only install ingress controller
+./utils/deploy.sh teamcity  # Only deploy TeamCity
+./utils/deploy.sh all       # Complete setup
+./utils/deploy.sh           # Interactive mode
+```
 
 ### TROUBLESHOOTING.md
 Comprehensive troubleshooting guide covering:
