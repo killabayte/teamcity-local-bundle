@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-postgres-data
+  labels:
+    app: {{ .Release.Name }}-teamcity
+    component: postgres
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: {{ .Values.persistence.postgres.size | quote }}
+{{- if .Values.persistence.postgres.storageClass }}
+  storageClassName: "{{ .Values.persistence.postgres.storageClass }}"
+{{- end }}

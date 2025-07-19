@@ -1,0 +1,40 @@
+# Default values for TeamCity Helm chart
+
+image:
+  server: "jetbrains/teamcity-server:latest"
+  agent:  "jetbrains/teamcity-agent:latest"
+pullPolicy: IfNotPresent
+
+replicaCount:
+  agent: 2
+
+# --- NEW BLOCK -------------------------------------------------------------
+server:
+  # Identifier of this node in the TeamCity UI
+  nodeId: main
+  # Public URL users & agents will reach (match your Ingress host)
+  publicUrl: http://teamcity.local
+  # Extra JVM flags appended after the mandatory two above
+  extraJvmOpts: ""
+# ---------------------------------------------------------------------------
+
+ingress:
+  enabled: true
+  className: nginx
+  host: teamcity.local
+  path: /
+  annotations: {}
+  tls: []
+
+database:
+  name: teamcity
+  user: teamcity
+  password: "teamcitypass"
+
+persistence:
+  teamcity:
+    size: 10Gi
+    storageClass: ""
+  postgres:
+    size: 5Gi
+    storageClass: ""

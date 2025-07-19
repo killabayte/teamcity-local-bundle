@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-postgresql
+  labels:
+    app: {{ .Release.Name }}-teamcity
+    component: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-teamcity
+      component: postgres
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-teamcity
+        component: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: "postgres:15-alpine"
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - secretRef:
+            name: {{ .Release.Name }}-postgresql   # Use secret for POSTGRES_USER/PASSWORD
+        ports:
+        - containerPort: 5432
+          name: postgres
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-postgres-data

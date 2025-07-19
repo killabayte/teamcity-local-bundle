@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-teamcity-agent
+  labels:
+    app: {{ .Release.Name }}-teamcity
+    component: agent
+spec:
+  replicas: {{ .Values.replicaCount.agent }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-teamcity
+      component: agent
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-teamcity
+        component: agent
+    spec:
+      containers:
+      - name: teamcity-agent
+        image: {{ .Values.image.agent | quote }}
+        imagePullPolicy: {{ .Values.pullPolicy | default "IfNotPresent" }}
+        env:
+        - name: SERVER_URL
+          value: "http://{{ .Release.Name }}-teamcity-server:8111"   # URL for agent to connect to server:contentReference[oaicite:11]{index=11}
+        volumeMounts:
+        - name: agent-conf
+          mountPath: /data/teamcity_agent/conf
+      volumes:
+      - name: agent-conf
+        emptyDir: {}   # Agent config directory (ephemeral). Can use PVC for persistence if needed.

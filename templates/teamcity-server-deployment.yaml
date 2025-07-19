@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-teamcity-server
+  labels:
+    app: {{ .Release.Name }}-teamcity
+    component: server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-teamcity
+      component: server
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-teamcity
+        component: server
+    spec:
+      containers:
+      - name: teamcity-server
+        image: {{ .Values.image.server | quote }}
+        imagePullPolicy: {{ .Values.pullPolicy | default "IfNotPresent" }}
+        ports:
+        - containerPort: 8111
+          name: http
+        env:
+        # --- NEW JVM FLAGS --------------------------------------------------
+        - name: TEAMCITY_SERVER_OPTS
+          value: "-Dteamcity.server.nodeId={{ .Values.server.nodeId }} -Dteamcity.server.rootURL={{ .Values.server.publicUrl }} {{ .Values.server.extraJvmOpts }}"
+        # -------------------------------------------------------------------
+        - name: TEAMCITY_DATA_PATH
+          value: "/data/teamcity_server/datadir"
+        - name: TEAMCITY_DB_URL
+          value: "jdbc:postgresql://{{ .Release.Name }}-postgresql:5432/{{ .Values.database.name }}"
+        - name: TEAMCITY_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-postgresql
+              key: POSTGRES_USER
+        - name: TEAMCITY_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-postgresql
+              key: POSTGRES_PASSWORD
+        volumeMounts:
+        - name: teamcity-data
+          mountPath: /data/teamcity_server/datadir
+        - name: teamcity-logs
+          mountPath: /opt/teamcity/logs
+      volumes:
+      - name: teamcity-data
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-teamcity-data
+      - name: teamcity-logs
+        emptyDir: {}

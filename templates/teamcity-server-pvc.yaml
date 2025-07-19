@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-teamcity-data
+  labels:
+    app: {{ .Release.Name }}-teamcity
+    component: server
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: {{ .Values.persistence.teamcity.size | quote }}
+{{- if .Values.persistence.teamcity.storageClass }}
+  storageClassName: "{{ .Values.persistence.teamcity.storageClass }}"
+{{- end }}
