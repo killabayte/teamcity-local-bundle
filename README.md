@@ -92,6 +92,15 @@ kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80
 - **URL**: http://teamcity.local:8080
 - **Default**: No authentication required initially
 
+**Important**: For Kind clusters, you need to port-forward the ingress controller:
+
+```bash
+# Port forward the ingress controller to access on port 8080
+kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80
+```
+
+Then access TeamCity at `http://teamcity.local:8080`
+
 ### 4. Authorize Agents
 
 1. Go to Agents page in TeamCity UI
@@ -146,11 +155,16 @@ For detailed troubleshooting information, see `utils/TROUBLESHOOTING.md`.
 
 #### Ingress Not Working (Kind Clusters)
 
-For Kind clusters, use port forwarding:
+For Kind clusters, you need to port-forward the ingress controller:
 
 ```bash
+# Port forward the ingress controller to access on port 8080
 kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80
 ```
+
+**Why this is needed**: Kind clusters don't automatically expose NodePorts to the host machine. The ingress controller runs on NodePorts internally, but you need port forwarding to access them from your local machine.
+
+**Alternative**: You can recreate the Kind cluster with port mapping in the configuration, but port forwarding is simpler for development.
 
 #### Agents Not Connecting
 

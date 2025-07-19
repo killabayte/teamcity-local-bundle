@@ -71,7 +71,7 @@ setup_kind() {
     fi
     
     print_status "Creating new Kind cluster with 2 worker nodes and port 8080 exposed..."
-    kind create cluster --name kansas --config kind-startup-config.yaml
+    kind create cluster --name kansas --config utils/kind-startup-config.yaml
     
     print_status "Kind cluster created successfully!"
     echo
@@ -96,7 +96,7 @@ setup_ingress() {
     fi
     
     # Check if ingress controller is installed
-    if ! kubectl get pods -n ingress-nginx &> /dev/null; then
+    if ! kubectl get namespace ingress-nginx &> /dev/null || ! kubectl get pods -n ingress-nginx &> /dev/null; then
         print_status "Installing NGINX Ingress Controller..."
         kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
         
@@ -132,7 +132,7 @@ setup_teamcity() {
     fi
     
     print_status "Installing TeamCity Helm chart..."
-    helm upgrade --install teamcity ../ -f ../values.yaml
+    helm upgrade --install teamcity . -f values.yaml
     
     print_status "Waiting for TeamCity to be ready..."
     kubectl wait --for=condition=ready pod -l app=teamcity-teamcity,component=server --timeout=300s
@@ -150,8 +150,10 @@ setup_teamcity() {
     
     # Check if we're using Kind with port mapping
     if command -v kind &> /dev/null && kind get clusters | grep -q "kansas"; then
-        print_status "Using Kind cluster with port 8080 exposed!"
-        print_status "   No port forwarding needed - access directly at http://teamcity.local:8080"
+        print_status "Using Kind cluster!"
+        print_warning "Port Forward Command (required for Kind clusters):"
+        print_status "   kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80"
+        print_status "   Then access at http://teamcity.local:8080"
     else
         print_warning "Port Forward Command (if needed):"
         print_status "   kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80"
