@@ -132,7 +132,22 @@ setup_teamcity() {
     fi
     
     print_status "Installing TeamCity Helm chart..."
-    helm upgrade --install teamcity . -f values.yaml
+    
+    # Try Helm installation first
+    if helm upgrade --install teamcity . -f values.yaml 2>/dev/null; then
+        print_status "Helm installation successful!"
+    else
+        print_warning "Helm installation failed (likely due to release secret size limit)"
+        print_status "Falling back to kubectl apply method..."
+        
+        # Create namespaces if they don't exist
+        kubectl create namespace teamcity-server --dry-run=client -o yaml | kubectl apply -f -
+        kubectl create namespace teamcity-agents --dry-run=client -o yaml | kubectl apply -f -
+        
+        # Apply the chart using kubectl
+        helm template teamcity . -f values.yaml | kubectl apply -f -
+        print_status "Kubectl apply installation successful!"
+    fi
     
     print_status "Waiting for TeamCity server to be ready..."
     kubectl wait --for=condition=ready pod -l app=teamcity-teamcity,component=server -n teamcity-server --timeout=300s

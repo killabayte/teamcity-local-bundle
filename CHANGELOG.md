@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3] - 2025-07-19
+
+### Fixed
+- Resolved Helm release secret size limit error during installation
+- Implemented fallback to kubectl apply method when Helm installation fails
+- Enhanced deploy script to handle large chart deployments gracefully
+
+### Changed
+- Updated deploy script to try Helm installation first, then fallback to kubectl apply
+- Added automatic namespace creation in fallback method
+- Improved error handling for deployment failures
+
+### Features
+- Smart deployment fallback system
+- Automatic handling of Helm release secret size limitations
+- Enhanced deployment reliability
+
+### Technical Details
+- Helm chart version: 0.2.3
+- Fallback method: `helm template | kubectl apply -f -`
+- Automatic namespace creation in fallback mode
+- Maintains all existing functionality while improving reliability
+
+### Installation
+```bash
+# Deploy with automatic fallback
+./utils/deploy.sh teamcity
+
+# Manual fallback if needed
+helm template teamcity . | kubectl apply -f -
+```
+
+### Known Issues
+- Helm release secret size limit (now handled automatically)
+- Kind clusters require port forwarding for ingress access
+- TeamCity agents need manual authorization in UI
+
+### Files Modified
+- utils/deploy.sh - Added fallback deployment logic
+- Chart.yaml - Updated version to 0.2.3
+
+### Package
+- Chart package: teamcity-0.2.3.tgz
+- Git tag: v0.2.3
+
 ## [0.2.1] - 2025-07-19
 
 ### Changed
