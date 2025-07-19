@@ -8,6 +8,4 @@ nodes:
     protocol: TCP
   - containerPort: 443
     hostPort: 8443
-    protocol: TCP
-- role: worker
-- role: worker 
+    protocol: TCP 

@@ -70,7 +70,7 @@ setup_kind() {
         fi
     fi
     
-    print_status "Creating new Kind cluster with 2 worker nodes and port 8080 exposed..."
+    print_status "Creating new Kind cluster with single node and port 8080 exposed..."
     kind create cluster --name kansas --config utils/kind-startup-config.yaml
     
     print_status "Kind cluster created successfully!"
@@ -215,7 +215,7 @@ show_usage() {
     echo "Usage: $0 [OPTION]"
     echo
     echo "Options:"
-    echo "  kind      - Create Kind cluster with 2 nodes and port 8080 exposed"
+    echo "  kind      - Create Kind cluster with single node and port 8080 exposed"
     echo "  ingress   - Install NGINX Ingress Controller"
     echo "  teamcity  - Deploy TeamCity to the cluster"
     echo "  all       - Run all steps (kind + ingress + teamcity)"

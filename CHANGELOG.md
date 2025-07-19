@@ -2,6 +2,56 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.4] - 2025-07-19
+
+### Fixed
+- Resolved cross-namespace communication issues by switching to single-node Kind cluster
+- Eliminated "Disconnected — Cannot access agent" timeout problems
+- Simplified networking architecture for better reliability
+
+### Changed
+- Updated Kind cluster configuration to use single control-plane node
+- Simplified deploy script to reflect single-node setup
+- Removed multi-node complexity that caused networking issues
+
+### Features
+- Single-node Kind cluster for improved reliability
+- Eliminated cross-namespace communication problems
+- Simplified deployment architecture
+
+### Technical Details
+- Helm chart version: 0.2.4
+- Kind cluster: Single control-plane node
+- All components run on same node for optimal communication
+- No cross-namespace networking issues
+
+### Installation
+```bash
+# Deploy with single-node Kind cluster
+./utils/deploy.sh all
+
+# Or step by step
+./utils/deploy.sh kind
+./utils/deploy.sh ingress
+./utils/deploy.sh teamcity
+```
+
+### Benefits
+- ✅ No cross-namespace communication issues
+- ✅ Eliminated timeout problems
+- ✅ Simpler networking architecture
+- ✅ More reliable agent connections
+- ✅ Easier debugging and monitoring
+
+### Files Modified
+- utils/kind-startup-config.yaml - Simplified to single node
+- utils/deploy.sh - Updated for single-node setup
+- templates/teamcity-agent-deployment.yaml - Enhanced timeout settings
+
+### Package
+- Chart package: teamcity-0.2.4.tgz
+- Git tag: v0.2.4
+
 ## [0.2.3] - 2025-07-19
 
 ### Fixed
