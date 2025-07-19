@@ -134,15 +134,22 @@ setup_teamcity() {
     print_status "Installing TeamCity Helm chart..."
     helm upgrade --install teamcity . -f values.yaml
     
-    print_status "Waiting for TeamCity to be ready..."
-    kubectl wait --for=condition=ready pod -l app=teamcity-teamcity,component=server --timeout=300s
+    print_status "Waiting for TeamCity server to be ready..."
+    kubectl wait --for=condition=ready pod -l app=teamcity-teamcity,component=server -n teamcity-server --timeout=300s
+    
+    print_status "Waiting for TeamCity agents to be ready..."
+    kubectl wait --for=condition=ready pod -l app=teamcity-teamcity,component=agent -n teamcity-agents --timeout=300s
     
     print_status "TeamCity deployment completed!"
     
     # Show status
     echo
     print_status "Deployment Status:"
-    kubectl get pods -l app=teamcity-teamcity
+    print_status "TeamCity Server (teamcity-server namespace):"
+    kubectl get pods -l app=teamcity-teamcity,component=server -n teamcity-server
+    echo
+    print_status "TeamCity Agents (teamcity-agents namespace):"
+    kubectl get pods -l app=teamcity-teamcity,component=agent -n teamcity-agents
     
     echo
     print_status "Access TeamCity:"
@@ -168,6 +175,47 @@ setup_teamcity() {
     print_status "TeamCity is ready to use!"
 }
 
+# Function to cleanup
+cleanup() {
+    print_step "Cleaning up TeamCity deployment..."
+    
+    # Check if we're connected to a cluster
+    if ! kubectl cluster-info &> /dev/null; then
+        print_error "Not connected to a Kubernetes cluster."
+        exit 1
+    fi
+    
+    print_status "Uninstalling TeamCity Helm chart..."
+    helm uninstall teamcity 2>/dev/null || print_warning "TeamCity not found or already uninstalled"
+    
+    print_status "Cleaning up namespaces..."
+    kubectl delete namespace teamcity-server 2>/dev/null || print_warning "teamcity-server namespace not found"
+    kubectl delete namespace teamcity-agents 2>/dev/null || print_warning "teamcity-agents namespace not found"
+    
+    print_status "Removing teamcity.local from /etc/hosts..."
+    sudo sed -i '' '/teamcity.local/d' /etc/hosts 2>/dev/null || print_warning "Could not remove from /etc/hosts"
+    
+    print_status "Cleanup completed!"
+}
+
+# Function to cleanup Kind cluster
+cleanup_kind() {
+    print_step "Cleaning up Kind cluster..."
+    
+    if ! command -v kind &> /dev/null; then
+        print_error "kind is not installed."
+        exit 1
+    fi
+    
+    if kind get clusters | grep -q "kansas"; then
+        print_status "Deleting Kind cluster 'kansas'..."
+        kind delete cluster --name kansas
+        print_status "Kind cluster deleted successfully!"
+    else
+        print_warning "Kind cluster 'kansas' not found."
+    fi
+}
+
 # Function to show usage
 show_usage() {
     echo "Usage: $0 [OPTION]"
@@ -177,6 +225,8 @@ show_usage() {
     echo "  ingress   - Install NGINX Ingress Controller"
     echo "  teamcity  - Deploy TeamCity to the cluster"
     echo "  all       - Run all steps (kind + ingress + teamcity)"
+    echo "  cleanup   - Remove TeamCity deployment and cleanup /etc/hosts"
+    echo "  cleanup-kind - Delete Kind cluster 'kansas'"
     echo "  help      - Show this help message"
     echo
     echo "Examples:"
@@ -184,6 +234,8 @@ show_usage() {
     echo "  $0 ingress        # Only install ingress controller"
     echo "  $0 teamcity       # Only deploy TeamCity"
     echo "  $0 all            # Complete setup"
+    echo "  $0 cleanup        # Remove TeamCity deployment"
+    echo "  $0 cleanup-kind   # Delete Kind cluster"
     echo
 }
 
@@ -214,6 +266,12 @@ case "${1:-}" in
     "all")
         run_all
         ;;
+    "cleanup")
+        cleanup
+        ;;
+    "cleanup-kind")
+        cleanup_kind
+        ;;
     "help"|"-h"|"--help")
         show_usage
         ;;
@@ -227,15 +285,19 @@ case "${1:-}" in
         echo "2) ingress - Install NGINX Ingress Controller"
         echo "3) teamcity - Deploy TeamCity"
         echo "4) all - Complete setup"
-        echo "5) help - Show help"
+        echo "5) cleanup - Remove TeamCity deployment"
+        echo "6) cleanup-kind - Delete Kind cluster"
+        echo "7) help - Show help"
         echo
-        read -p "Enter your choice (1-5): " choice
+        read -p "Enter your choice (1-7): " choice
         case $choice in
             1) check_prerequisites; setup_kind ;;
             2) check_prerequisites; setup_ingress ;;
             3) check_prerequisites; setup_teamcity ;;
             4) run_all ;;
-            5) show_usage ;;
+            5) cleanup ;;
+            6) cleanup_kind ;;
+            7) show_usage ;;
             *) print_error "Invalid choice"; exit 1 ;;
         esac
         ;;

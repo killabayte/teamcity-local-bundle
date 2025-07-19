@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-teamcity-agent
+  namespace: teamcity-agents
   labels:
     app: {{ .Release.Name }}-teamcity
     component: agent
@@ -23,7 +24,7 @@ spec:
         imagePullPolicy: {{ .Values.pullPolicy | default "IfNotPresent" }}
         env:
         - name: SERVER_URL
-          value: "http://{{ .Release.Name }}-teamcity-server:8111"   # URL for agent to connect to server:contentReference[oaicite:11]{index=11}
+          value: "http://{{ .Release.Name }}-teamcity-server.teamcity-server.svc.cluster.local:8111"   # URL for agent to connect to server in different namespace
         volumeMounts:
         - name: agent-conf
           mountPath: /data/teamcity_agent/conf
