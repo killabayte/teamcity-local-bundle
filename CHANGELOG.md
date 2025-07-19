@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2025-07-19
+
+### Changed
+- Simplified cleanup functionality to only delete Kind cluster
+- Removed duplicate cleanup options
+- Updated documentation to reflect simplified cleanup
+
+### Features
+- `./utils/deploy.sh cleanup` - Delete Kind cluster 'kansas' (simplified)
+
+### Technical Details
+- Helm chart version: 0.2.1
+- Simplified cleanup operations
+
 ## [0.2.0] - 2025-07-19
 
 ### Added
