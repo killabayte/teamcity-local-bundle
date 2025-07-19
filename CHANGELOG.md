@@ -17,8 +17,7 @@ All notable changes to this project will be documented in this file.
 - Enhanced cleanup to remove namespaces
 
 ### Features
-- `./utils/deploy.sh cleanup` - Remove TeamCity deployment and cleanup /etc/hosts
-- `./utils/deploy.sh cleanup-kind` - Delete Kind cluster 'kansas'
+- `./utils/deploy.sh cleanup` - Delete Kind cluster 'kansas'
 - Separate namespaces for better resource isolation
 - Cross-namespace communication between agents and server
 
@@ -40,7 +39,6 @@ All notable changes to this project will be documented in this file.
 
 # Cleanup options
 ./utils/deploy.sh cleanup
-./utils/deploy.sh cleanup-kind
 ```
 
 ### Access
