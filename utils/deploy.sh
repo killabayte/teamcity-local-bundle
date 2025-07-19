@@ -57,13 +57,13 @@ setup_kind() {
     fi
     
     # Check if we have a Kind cluster
-    if kind get clusters | grep -q "kind"; then
+    if kind get clusters | grep -q "kansas"; then
         print_warning "Kind cluster already exists."
         read -p "Do you want to delete the existing cluster and create a new one? (y/N): " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             print_status "Deleting existing Kind cluster..."
-            kind delete cluster
+            kind delete cluster --name emerald-city
         else
             print_status "Using existing Kind cluster"
             return
@@ -71,7 +71,7 @@ setup_kind() {
     fi
     
     print_status "Creating new Kind cluster with 2 worker nodes and port 8080 exposed..."
-    kind create cluster --config kind-startup-config.yaml
+    kind create cluster --name kansas --config kind-startup-config.yaml
     
     print_status "Kind cluster created successfully!"
     echo
@@ -149,7 +149,7 @@ setup_teamcity() {
     print_status "   URL: http://teamcity.local:8080"
     
     # Check if we're using Kind with port mapping
-    if command -v kind &> /dev/null && kind get clusters | grep -q "kind"; then
+    if command -v kind &> /dev/null && kind get clusters | grep -q "kansas"; then
         print_status "Using Kind cluster with port 8080 exposed!"
         print_status "   No port forwarding needed - access directly at http://teamcity.local:8080"
     else
