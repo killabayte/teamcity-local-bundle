@@ -18,15 +18,42 @@ A production-ready Helm chart for deploying TeamCity Server and Agents on Kubern
 - Helm 3.x
 - kubectl configured
 
+## Project Structure
+
+```
+teamcity-k8s-instalations/
+├── Chart.yaml              # Helm chart metadata
+├── values.yaml             # Default configuration values
+├── README.md              # This documentation
+├── templates/              # Kubernetes manifests
+│   ├── ingress.yaml
+│   ├── teamcity-server-deployment.yaml
+│   ├── teamcity-agent-deployment.yaml
+│   └── ...
+└── utils/                  # Utility scripts and documentation
+    ├── deploy.sh           # Automated deployment script
+    ├── TROUBLESHOOTING.md  # Common issues and solutions
+    └── KIND_INGRESS_SETUP.md # Kind cluster setup guide
+```
+
 ## Quick Start
 
-### 1. Install NGINX Ingress Controller
+### Option 1: Automated Deployment
+
+```bash
+# Run the automated deployment script
+./utils/deploy.sh
+```
+
+### Option 2: Manual Deployment
+
+#### 1. Install NGINX Ingress Controller
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
 ```
 
-### 2. Install TeamCity
+#### 2. Install TeamCity
 
 ```bash
 # Add to /etc/hosts for local development
@@ -90,28 +117,13 @@ persistence:
     storageClass: ""
 ```
 
-## Architecture
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Ingress       │    │  TeamCity       │    │  PostgreSQL     │
-│   (NGINX)       │    │  Server         │    │  Database       │
-│                 │    │                 │    │                 │
-│  Port 80/443    │◄──►│  Port 8111     │◄──►│  Port 5432     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                              │
-                              ▼
-                       ┌─────────────────┐
-                       │  TeamCity       │
-                       │  Agents         │
-                       │                 │
-                       │  Port 9090      │
-                       └─────────────────┘
-```
-
 ## Troubleshooting
 
-### Ingress Not Working (Kind Clusters)
+For detailed troubleshooting information, see `utils/TROUBLESHOOTING.md`.
+
+### Quick Fixes
+
+#### Ingress Not Working (Kind Clusters)
 
 For Kind clusters, use port forwarding:
 
@@ -119,13 +131,13 @@ For Kind clusters, use port forwarding:
 kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80
 ```
 
-### Agents Not Connecting
+#### Agents Not Connecting
 
 1. Check agent logs: `kubectl logs -l app=teamcity-teamcity,component=agent`
 2. Verify agents are authorized in TeamCity UI
 3. Check server logs: `kubectl logs -l app=teamcity-teamcity,component=server`
 
-### Database Issues
+#### Database Issues
 
 ```bash
 # Check PostgreSQL pod
@@ -134,6 +146,8 @@ kubectl get pods -l app=teamcity-teamcity,component=postgresql
 # Check PostgreSQL logs
 kubectl logs -l app=teamcity-teamcity,component=postgresql
 ```
+
+For Kind cluster specific issues, see `utils/KIND_INGRESS_SETUP.md`.
 
 ## Production Considerations
 
@@ -155,6 +169,32 @@ kubectl logs -l app=teamcity-teamcity,component=postgresql
 1. **Add Prometheus annotations**
 2. **Configure logging** aggregation
 3. **Set up health checks**
+
+## Utils Directory
+
+The `utils/` directory contains helpful scripts and documentation:
+
+### deploy.sh
+Automated deployment script that:
+- Checks prerequisites (kubectl, helm, cluster connection)
+- Installs NGINX Ingress Controller if needed
+- Adds teamcity.local to /etc/hosts
+- Deploys TeamCity with proper configuration
+- Provides next steps and access information
+
+### TROUBLESHOOTING.md
+Comprehensive troubleshooting guide covering:
+- Ingress issues and solutions
+- Agent connection problems
+- Database connectivity issues
+- Common error messages and fixes
+
+### KIND_INGRESS_SETUP.md
+Specialized guide for Kind clusters:
+- Port forwarding solutions
+- Kind cluster configuration
+- MetalLB setup for LoadBalancer support
+- Alternative access methods
 
 ## Development
 
