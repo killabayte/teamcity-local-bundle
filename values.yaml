@@ -8,15 +8,10 @@ pullPolicy: IfNotPresent
 replicaCount:
   agent: 2
 
-# --- NEW BLOCK -------------------------------------------------------------
 server:
-  # Identifier of this node in the TeamCity UI
   nodeId: main
-  # Public URL users & agents will reach (match your Ingress host)
   publicUrl: http://teamcity.local
-  # Extra JVM flags appended after the mandatory two above
   extraJvmOpts: ""
-# ---------------------------------------------------------------------------
 
 ingress:
   enabled: true

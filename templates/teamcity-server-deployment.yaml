@@ -26,10 +26,8 @@ spec:
         - containerPort: 8111
           name: http
         env:
-        # --- NEW JVM FLAGS --------------------------------------------------
         - name: TEAMCITY_SERVER_OPTS
           value: "-Dteamcity.server.nodeId={{ .Values.server.nodeId }} -Dteamcity.server.rootURL={{ .Values.server.publicUrl }} {{ .Values.server.extraJvmOpts }}"
-        # -------------------------------------------------------------------
         - name: TEAMCITY_DATA_PATH
           value: "/data/teamcity_server/datadir"
         - name: TEAMCITY_DB_URL

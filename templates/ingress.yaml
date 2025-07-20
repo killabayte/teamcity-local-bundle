@@ -5,9 +5,6 @@ metadata:
   labels:
     app: {{ .Release.Name }}-teamcity
     component: ingress-headers
-# Configure forwarded headers so TeamCity sees the public host
-# NOTE: if you use TLS, change X‑Forwarded‑Proto to "https"
-# (NGINX will also set X‑Forwarded‑Port automatically.)
 data:
   X-Forwarded-Host: "{{ .Values.ingress.host }}"
   X-Forwarded-Proto: "http"

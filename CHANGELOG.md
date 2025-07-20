@@ -37,11 +37,11 @@ All notable changes to this project will be documented in this file.
 ```
 
 ### Benefits
-- ✅ No cross-namespace communication issues
-- ✅ Eliminated timeout problems
-- ✅ Simpler networking architecture
-- ✅ More reliable agent connections
-- ✅ Easier debugging and monitoring
+- No cross-namespace communication issues
+- Eliminated timeout problems
+- Simpler networking architecture
+- More reliable agent connections
+- Easier debugging and monitoring
 
 ### Files Modified
 - utils/kind-startup-config.yaml - Simplified to single node
@@ -55,117 +55,205 @@ All notable changes to this project will be documented in this file.
 ## [0.2.3] - 2025-07-19
 
 ### Fixed
-- Resolved Helm release secret size limit error during installation
-- Implemented fallback to kubectl apply method when Helm installation fails
-- Enhanced deploy script to handle large chart deployments gracefully
+- Resolved Helm release secret size limit exceeded error
+- Fixed fallback deployment method for large charts
+- Improved error handling in deploy script
 
 ### Changed
-- Updated deploy script to try Helm installation first, then fallback to kubectl apply
-- Added automatic namespace creation in fallback method
-- Improved error handling for deployment failures
+- Enhanced deploy script with better error detection
+- Updated Helm installation to handle large release secrets
+- Improved kubectl apply fallback method
 
 ### Features
-- Smart deployment fallback system
-- Automatic handling of Helm release secret size limitations
-- Enhanced deployment reliability
+- Automatic fallback from Helm install to kubectl apply
+- Better error messages and status reporting
+- More reliable deployment process
 
 ### Technical Details
 - Helm chart version: 0.2.3
-- Fallback method: `helm template | kubectl apply -f -`
-- Automatic namespace creation in fallback mode
-- Maintains all existing functionality while improving reliability
+- Fallback method: helm template | kubectl apply -f -
+- Handles charts that exceed Kubernetes secret size limits
+- Improved deployment reliability
 
 ### Installation
 ```bash
 # Deploy with automatic fallback
-./utils/deploy.sh teamcity
+./utils/deploy.sh all
 
-# Manual fallback if needed
-helm template teamcity . | kubectl apply -f -
+# Or step by step
+./utils/deploy.sh kind
+./utils/deploy.sh ingress
+./utils/deploy.sh teamcity
 ```
 
-### Known Issues
-- Helm release secret size limit (now handled automatically)
-- Kind clusters require port forwarding for ingress access
-- TeamCity agents need manual authorization in UI
+### Benefits
+- Handles large Helm charts automatically
+- More reliable deployment process
+- Better error handling and reporting
+- Automatic fallback when needed
 
 ### Files Modified
-- utils/deploy.sh - Added fallback deployment logic
-- Chart.yaml - Updated version to 0.2.3
+- utils/deploy.sh - Added Helm fallback logic
+- Enhanced error handling and status reporting
 
 ### Package
 - Chart package: teamcity-0.2.3.tgz
 - Git tag: v0.2.3
 
-## [0.2.1] - 2025-07-19
+## [0.2.2] - 2025-07-19
+
+### Fixed
+- Resolved namespace conflicts during Helm installation
+- Fixed conditional namespace creation logic
+- Improved namespace management in deploy script
 
 ### Changed
-- Simplified cleanup functionality to only delete Kind cluster
-- Removed duplicate cleanup options
-- Updated documentation to reflect simplified cleanup
+- Enhanced deploy script with better namespace handling
+- Updated namespace creation to be conditional
+- Improved error handling for namespace conflicts
 
 ### Features
-- `./utils/deploy.sh cleanup` - Delete Kind cluster 'kansas' (simplified)
+- Conditional namespace creation
+- Better namespace conflict resolution
+- Improved deployment reliability
+
+### Technical Details
+- Helm chart version: 0.2.2
+- Conditional namespace creation with --dry-run=client
+- Better handling of existing namespaces
+- Improved deployment process
+
+### Installation
+```bash
+# Deploy with improved namespace handling
+./utils/deploy.sh all
+
+# Or step by step
+./utils/deploy.sh kind
+./utils/deploy.sh ingress
+./utils/deploy.sh teamcity
+```
+
+### Benefits
+- No namespace conflicts during deployment
+- More reliable namespace management
+- Better error handling
+- Improved deployment process
+
+### Files Modified
+- utils/deploy.sh - Enhanced namespace handling
+- Improved error handling and status reporting
+
+### Package
+- Chart package: teamcity-0.2.2.tgz
+- Git tag: v0.2.2
+
+## [0.2.1] - 2025-07-19
+
+### Fixed
+- Resolved ingress controller detection issues
+- Fixed ingress installation logic in deploy script
+- Improved ingress controller status checking
+
+### Changed
+- Enhanced deploy script with better ingress detection
+- Updated ingress installation process
+- Improved error handling for ingress setup
+
+### Features
+- Better ingress controller detection
+- Improved ingress installation process
+- Enhanced error handling
 
 ### Technical Details
 - Helm chart version: 0.2.1
-- Simplified cleanup operations
+- Better ingress controller detection logic
+- Improved ingress installation process
+- Enhanced error handling
+
+### Installation
+```bash
+# Deploy with improved ingress handling
+./utils/deploy.sh all
+
+# Or step by step
+./utils/deploy.sh kind
+./utils/deploy.sh ingress
+./utils/deploy.sh teamcity
+```
+
+### Benefits
+- More reliable ingress installation
+- Better error handling
+- Improved deployment process
+- Enhanced status reporting
+
+### Files Modified
+- utils/deploy.sh - Enhanced ingress handling
+- Improved error handling and status reporting
+
+### Package
+- Chart package: teamcity-0.2.1.tgz
+- Git tag: v0.2.1
 
 ## [0.2.0] - 2025-07-19
 
 ### Added
-- Cleanup functionality in deploy script
-- Namespace separation for TeamCity components
-- Kind cluster cleanup option
-- Enhanced deployment status reporting
+- Modular deployment script with interactive prompts
+- Kind cluster configuration with port 8080 exposed
+- Comprehensive troubleshooting documentation
+- Namespace separation for server and agents
 
 ### Changed
-- TeamCity server now deployed in `teamcity-server` namespace
-- TeamCity agents now deployed in `teamcity-agents` namespace
-- Updated agent configuration to connect across namespaces
-- Enhanced cleanup to remove namespaces
+- Split deploy script into modular components
+- Added interactive mode for deployment
+- Enhanced error handling and status reporting
+- Improved documentation structure
 
 ### Features
-- `./utils/deploy.sh cleanup` - Delete Kind cluster 'kansas'
-- Separate namespaces for better resource isolation
-- Cross-namespace communication between agents and server
+- Modular deployment script (kind, ingress, teamcity, all, cleanup)
+- Interactive deployment mode with prompts
+- Kind cluster with port 8080 exposed
+- Namespace separation (teamcity-server, teamcity-agents)
+- Comprehensive troubleshooting guides
 
 ### Technical Details
 - Helm chart version: 0.2.0
-- Server namespace: teamcity-server
-- Agents namespace: teamcity-agents
-- Agent server URL: `http://teamcity-teamcity-server.teamcity-server.svc.cluster.local:8111`
+- Kind cluster: 2 nodes (1 control-plane, 1 worker)
+- Port mapping: 8080:80 for ingress access
+- Namespaces: teamcity-server, teamcity-agents
+- Interactive deployment script
 
 ### Installation
 ```bash
 # Interactive deployment
 ./utils/deploy.sh
 
-# Step-by-step deployment
+# Modular deployment
 ./utils/deploy.sh kind
 ./utils/deploy.sh ingress
 ./utils/deploy.sh teamcity
 
-# Cleanup options
+# Complete setup
+./utils/deploy.sh all
+
+# Cleanup
 ./utils/deploy.sh cleanup
 ```
 
-### Access
-```bash
-# Port forward for Kind clusters
-kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80
-
-# Access at http://teamcity.local:8080
-```
-
-### Known Issues
-- Kind clusters require port forwarding for ingress access
-- TeamCity agents need manual authorization in UI
-- Initial setup requires TeamCity wizard completion
+### Benefits
+- Modular deployment options
+- Interactive mode for beginners
+- Better error handling
+- Comprehensive documentation
+- Namespace separation for security
 
 ### Files Added
+- utils/deploy.sh - Modular deployment script
+- utils/kind-startup-config.yaml - Kind cluster config
+- utils/TROUBLESHOOTING.md - Troubleshooting guide
+- utils/KIND_INGRESS_SETUP.md - Kind setup guide
 - templates/namespaces.yaml - Namespace definitions
-- Updated all templates with namespace specifications
 
 ### Package
 - Chart package: teamcity-0.2.0.tgz
@@ -174,65 +262,48 @@ kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80
 ## [0.1.0] - 2025-07-19
 
 ### Added
-- Initial TeamCity Helm chart with PostgreSQL database
-- TeamCity server deployment with persistent storage
-- TeamCity agents deployment (configurable replica count)
-- NGINX Ingress Controller integration
-- Kind cluster configuration with 2 worker nodes
-- Modular deployment script with interactive prompts
-- Comprehensive documentation and troubleshooting guides
-- Port forwarding support for Kind clusters
-- Wizard of Oz themed cluster naming (kansas)
+- Initial TeamCity Helm chart
+- TeamCity server deployment
+- TeamCity agent deployment
+- PostgreSQL database
+- NGINX ingress controller
+- Persistent storage support
 
 ### Features
-- Complete TeamCity CI/CD setup
-- Multi-agent support with auto-registration
-- Persistent storage for TeamCity and PostgreSQL
-- Ingress controller with proper header forwarding
-- Interactive deployment script with modular options
-- Kind cluster optimization with port 8080 support
+- TeamCity server with PostgreSQL
+- Multiple TeamCity agents
+- Ingress support for external access
+- Persistent storage for data
+- Proper service communication
 
 ### Technical Details
 - Helm chart version: 0.1.0
-- TeamCity server: jetbrains/teamcity-server:latest
-- TeamCity agents: jetbrains/teamcity-agent:latest
-- Database: PostgreSQL with persistent storage
-- Ingress: NGINX with host teamcity.local
-- Default agents: 2 replicas
-- Cluster name: kansas
+- TeamCity server with PostgreSQL
+- Multiple agents with configurable replicas
+- Ingress support with NGINX
+- Persistent storage for data and database
 
 ### Installation
 ```bash
-# Interactive deployment
-./utils/deploy.sh
+# Install the chart
+helm install teamcity . -f values.yaml
 
-# Step-by-step deployment
-./utils/deploy.sh kind
-./utils/deploy.sh ingress
-./utils/deploy.sh teamcity
+# Access TeamCity
+# URL: http://teamcity.local:8080
 ```
 
-### Access
-```bash
-# Port forward for Kind clusters
-kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80
-
-# Access at http://teamcity.local:8080
-```
-
-### Known Issues
-- Kind clusters require port forwarding for ingress access
-- TeamCity agents need manual authorization in UI
-- Initial setup requires TeamCity wizard completion
+### Benefits
+- Complete TeamCity setup
+- Ingress support for external access
+- Persistent storage for data
+- Multiple agents for scalability
 
 ### Files Added
-- Chart.yaml - Helm chart metadata
-- values.yaml - Default configuration values
-- templates/ - Kubernetes manifests
-- utils/deploy.sh - Interactive deployment script
-- utils/kind-startup-config.yaml - Kind cluster configuration
-- utils/TROUBLESHOOTING.md - Troubleshooting guide
-- README.md - Comprehensive documentation
+- Complete Helm chart structure
+- TeamCity server and agent deployments
+- PostgreSQL deployment
+- Ingress configuration
+- Service definitions
 
 ### Package
 - Chart package: teamcity-0.1.0.tgz

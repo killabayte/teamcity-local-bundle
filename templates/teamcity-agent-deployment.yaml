@@ -24,12 +24,12 @@ spec:
         imagePullPolicy: {{ .Values.pullPolicy | default "IfNotPresent" }}
         env:
         - name: SERVER_URL
-          value: "http://{{ .Release.Name }}-teamcity-server.teamcity-server.svc.cluster.local:8111"   # URL for agent to connect to server in different namespace
+          value: "http://{{ .Release.Name }}-teamcity-server.teamcity-server.svc.cluster.local:8111"
         - name: TEAMCITY_AGENT_OPTS
-          value: "-Dteamcity.agent.connection.timeout=120000 -Dteamcity.agent.connection.retry.count=3 -Dhttp.connection.timeout=120000 -Dhttp.socket.timeout=120000 -Dhttp.connection.pool.timeout=120000 -Dhttp.connection.pool.size=20"   # Comprehensive timeout and connection pool settings
+          value: "-Dteamcity.agent.connection.timeout=120000 -Dteamcity.agent.connection.retry.count=3 -Dhttp.connection.timeout=120000 -Dhttp.socket.timeout=120000 -Dhttp.connection.pool.timeout=120000 -Dhttp.connection.pool.size=20"
         volumeMounts:
         - name: agent-conf
           mountPath: /data/teamcity_agent/conf
       volumes:
       - name: agent-conf
-        emptyDir: {}   # Agent config directory (ephemeral). Can use PVC for persistence if needed.
+        emptyDir: {}
