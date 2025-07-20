@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.5] - 2025-07-19
+
+### Changed
+- Cleaned up chart formatting and documentation
+- Removed excessive comment blocks and formatting
+- Simplified code comments throughout the chart
+- Improved code readability and professionalism
+
+### Files Modified
+- values.yaml - Removed comment blocks
+- templates/teamcity-server-deployment.yaml - Cleaned up JVM flags section
+- templates/teamcity-agent-deployment.yaml - Removed excessive inline comments
+- templates/ingress.yaml - Simplified comment structure
+- CHANGELOG.md - Removed emoji formatting, made more natural
+
+### Technical Details
+- Helm chart version: 0.2.5
+- Improved code readability and professionalism
+- Maintained all functionality while cleaning up presentation
+- More maintainable and human-readable codebase
+
+### Package
+- Chart package: teamcity-0.2.5.tgz
+- Git tag: v0.2.5
+
 ## [0.2.4] - 2025-07-19
 
 ### Fixed
