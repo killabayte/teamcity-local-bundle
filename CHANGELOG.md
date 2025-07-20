@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.6] - 2025-07-19
+
+### Changed
+- Updated README.md to accurately reflect all current files and functionality
+- Added comprehensive deployment script documentation
+- Included Kind cluster configuration details
+- Updated project structure to match actual files
+- Added current version history and features
+
+### Files Modified
+- README.md - Complete rewrite to match current project state
+- Chart.yaml - Updated version to 0.2.6
+
+### Technical Details
+- Helm chart version: 0.2.6
+- Accurate project structure documentation
+- Complete deployment script reference
+- Current functionality documentation
+
+### Package
+- Chart package: teamcity-0.2.6.tgz
+- Git tag: v0.2.6
+
 ## [0.2.5] - 2025-07-19
 
 ### Changed
