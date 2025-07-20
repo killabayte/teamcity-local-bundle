@@ -1,6 +1,6 @@
 # TeamCity Kubernetes Helm Chart
 
-A production-ready Helm chart for deploying TeamCity Server and Agents on Kubernetes.
+A production-ready Helm chart for deploying TeamCity Server and Agents on Kubernetes with automated deployment scripts.
 
 ## Features
 
@@ -8,8 +8,10 @@ A production-ready Helm chart for deploying TeamCity Server and Agents on Kubern
 - **TeamCity Agents** (configurable replica count)
 - **Ingress support** with NGINX controller
 - **Persistent storage** for TeamCity data and PostgreSQL
-- **Proper networking** with internal service communication
-- **Security** with proper secrets management
+- **Single-node Kind cluster** for reliable deployment
+- **Automated deployment scripts** with modular options
+- **Namespace separation** for better resource isolation
+- **Fallback deployment** for large Helm charts
 
 ## Prerequisites
 
@@ -17,24 +19,31 @@ A production-ready Helm chart for deploying TeamCity Server and Agents on Kubern
 - NGINX Ingress Controller
 - Helm 3.x
 - kubectl configured
+- kind (for local development)
 
 ## Project Structure
 
 ```
 teamcity-k8s-instalations/
-├── Chart.yaml              # Helm chart metadata
-├── values.yaml             # Default configuration values
-├── README.md              # This documentation
-├── templates/              # Kubernetes manifests
-│   ├── ingress.yaml
+├── Chart.yaml                    # Helm chart metadata
+├── values.yaml                   # Default configuration values
+├── README.md                     # This documentation
+├── CHANGELOG.md                  # Version history and changes
+├── templates/                    # Kubernetes manifests
+│   ├── namespaces.yaml          # Namespace definitions
+│   ├── ingress.yaml             # Ingress configuration
 │   ├── teamcity-server-deployment.yaml
+│   ├── teamcity-server-service.yaml
+│   ├── teamcity-server-pvc.yaml
 │   ├── teamcity-agent-deployment.yaml
-│   └── ...
-└── utils/                  # Utility scripts and documentation
-    ├── deploy.sh           # Automated deployment script
-    ├── kind-startup-config.yaml # Kind cluster configuration (2 nodes, port 8080)
-    ├── TROUBLESHOOTING.md  # Common issues and solutions
-    └── KIND_INGRESS_SETUP.md # Kind cluster setup guide
+│   ├── postgres-deployment.yaml
+│   ├── postgres-service.yaml
+│   ├── postgres-pvc.yaml
+│   └── secret.yaml
+└── utils/                        # Utility scripts
+    ├── deploy.sh                 # Automated deployment script
+    ├── kind-startup-config.yaml  # Kind cluster configuration
+    └── TROUBLESHOOTING.md       # Troubleshooting guide
 ```
 
 ## Quick Start
@@ -112,13 +121,19 @@ Then access TeamCity at `http://teamcity.local:8080`
 ### values.yaml
 
 ```yaml
-# TeamCity Server Configuration
+image:
+  server: "jetbrains/teamcity-server:latest"
+  agent:  "jetbrains/teamcity-agent:latest"
+pullPolicy: IfNotPresent
+
+replicaCount:
+  agent: 2
+
 server:
   nodeId: main
   publicUrl: http://teamcity.local
   extraJvmOpts: ""
 
-# Ingress Configuration
 ingress:
   enabled: true
   className: nginx
@@ -127,17 +142,11 @@ ingress:
   annotations: {}
   tls: []
 
-# Database Configuration
 database:
   name: teamcity
   user: teamcity
   password: "teamcitypass"
 
-# Agent Configuration
-replicaCount:
-  agent: 2
-
-# Persistence
 persistence:
   teamcity:
     size: 10Gi
@@ -146,6 +155,63 @@ persistence:
     size: 5Gi
     storageClass: ""
 ```
+
+## Deployment Script
+
+The `utils/deploy.sh` script provides modular deployment options:
+
+### Available Commands
+
+- **`kind`** - Create Kind cluster with single node and port 8080 exposed
+- **`ingress`** - Install NGINX Ingress Controller
+- **`teamcity`** - Deploy TeamCity to the cluster
+- **`all`** - Run all steps (kind + ingress + teamcity)
+- **`cleanup`** - Delete Kind cluster 'kansas'
+- **`help`** - Show help message
+
+### Usage Examples
+
+```bash
+./utils/deploy.sh kind      # Only create Kind cluster
+./utils/deploy.sh ingress   # Only install ingress controller
+./utils/deploy.sh teamcity  # Only deploy TeamCity
+./utils/deploy.sh all       # Complete setup
+./utils/deploy.sh cleanup   # Delete Kind cluster
+./utils/deploy.sh           # Interactive mode
+```
+
+### Features
+
+- **Interactive mode** with prompts for beginners
+- **Modular deployment** for step-by-step setup
+- **Automatic fallback** from Helm to kubectl apply
+- **Prerequisites checking** for required tools
+- **Colored output** for better user experience
+- **Error handling** with helpful messages
+
+## Kind Cluster Configuration
+
+The Kind cluster is configured as a single-node setup for reliability:
+
+```yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  extraPortMappings:
+  - containerPort: 80
+    hostPort: 8080
+    protocol: TCP
+  - containerPort: 443
+    hostPort: 8443
+    protocol: TCP
+```
+
+**Benefits of single-node setup:**
+- Eliminates cross-namespace communication issues
+- Simpler networking architecture
+- More reliable agent connections
+- Easier debugging and monitoring
 
 ## Troubleshooting
 
@@ -164,8 +230,6 @@ kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80
 
 **Why this is needed**: Kind clusters don't automatically expose NodePorts to the host machine. The ingress controller runs on NodePorts internally, but you need port forwarding to access them from your local machine.
 
-**Alternative**: You can recreate the Kind cluster with port mapping in the configuration, but port forwarding is simpler for development.
-
 #### Agents Not Connecting
 
 1. Check agent logs: `kubectl logs -l app=teamcity-teamcity,component=agent`
@@ -182,7 +246,14 @@ kubectl get pods -l app=teamcity-teamcity,component=postgresql
 kubectl logs -l app=teamcity-teamcity,component=postgresql
 ```
 
-For Kind cluster specific issues, see `utils/KIND_INGRESS_SETUP.md`.
+#### Helm Installation Issues
+
+The deployment script automatically handles large Helm charts by falling back to kubectl apply:
+
+```bash
+# Manual fallback if needed
+helm template teamcity . -f values.yaml | kubectl apply -f -
+```
 
 ## Production Considerations
 
@@ -204,41 +275,6 @@ For Kind cluster specific issues, see `utils/KIND_INGRESS_SETUP.md`.
 1. **Add Prometheus annotations**
 2. **Configure logging** aggregation
 3. **Set up health checks**
-
-## Utils Directory
-
-The `utils/` directory contains helpful scripts and documentation:
-
-### deploy.sh
-Modular deployment script with interactive prompts:
-- **kind** - Create Kind cluster with 2 worker nodes and port 8080 exposed
-- **ingress** - Install NGINX Ingress Controller
-- **teamcity** - Deploy TeamCity to the cluster
-- **all** - Run complete setup (kind + ingress + teamcity)
-- **Interactive mode** - Choose what to install with prompts
-
-Usage examples:
-```bash
-./utils/deploy.sh kind      # Only create Kind cluster
-./utils/deploy.sh ingress   # Only install ingress controller
-./utils/deploy.sh teamcity  # Only deploy TeamCity
-./utils/deploy.sh all       # Complete setup
-./utils/deploy.sh           # Interactive mode
-```
-
-### TROUBLESHOOTING.md
-Comprehensive troubleshooting guide covering:
-- Ingress issues and solutions
-- Agent connection problems
-- Database connectivity issues
-- Common error messages and fixes
-
-### KIND_INGRESS_SETUP.md
-Specialized guide for Kind clusters:
-- Port forwarding solutions
-- Kind cluster configuration
-- MetalLB setup for LoadBalancer support
-- Alternative access methods
 
 ## Development
 
@@ -270,9 +306,10 @@ helm install teamcity . -f values.yaml --dry-run
 
 ## Version History
 
-- **v1.0.0**: Initial working version with ingress and agents
-- Fixed ingress configuration for Kind clusters
-- Proper agent-server communication via internal services
+- **v0.2.5**: Clean up chart formatting and documentation
+- **v0.2.4**: Switch to single-node Kind cluster to resolve cross-namespace communication issues
+- **v0.2.3**: Implement fallback deployment for large Helm charts
+- **v0.2.0**: Initial modular deployment script with interactive prompts
 
 ## Contributing
 
